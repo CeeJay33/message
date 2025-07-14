@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra-Modern Live Message System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 50%, #ffffff 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.08) 0%, transparent 50%); */
+            animation: backgroundShift 15s ease-in-out infinite;
+            z-index: -3;
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(120, 119, 198, 0.4);
+            border-radius: 50%;
+            animation: float 20s linear infinite;
+        }
+
+        /* Grid Lines */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+           
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridPulse 8s ease-in-out infinite;
+        }
+
+        /* Sleek Navigation */
+        .main__navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(120, 119, 198, 0.1);
+            
+            position: relative;
+            z-index: 100;
+        }
+
+        .main__navigation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(120, 119, 198, 0.8) 25%, 
+                rgba(255, 119, 198, 0.8) 50%, 
+                rgba(120, 219, 255, 0.8) 75%, 
+                transparent 100%);
+            animation: navGlow 3s ease-in-out infinite;
+        }
+
+        .nav__left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .message__icon {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            position: relative;
+        }
+
+        .message__icon img {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            box-shadow: 
+                0 8px 25px rgba(120, 119, 198, 0.4),
+                0 0 20px rgba(255, 119, 198, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            animation: iconGlow 4s ease-in-out infinite;
+        }
+
+        .nav__title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7877c6, #ff77c6, #78dbff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            text-shadow: 0 0 30px rgba(120, 119, 198, 0.3);
+            animation: titleShimmer 3s ease-in-out infinite;
+        }
+
+        .nav__right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav__status {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: 
+                0 4px 15px rgba(34, 197, 94, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .status__dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 
+                0 0 20px #22c55e,
+                0 0 40px #22c55e;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        .status__text {
+            font-size: 14px;
+            color: #22c55e;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .nav__counter {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            text-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+        }
+
+        /* Main Container */
+        .flexed__centered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 100px);
+            position: relative;
+        }
+
+        .messages__container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Holographic Message Item */
+        .message__item {
+            position: absolute;
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(50px) scale(0.8) rotateX(15deg);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            max-width: 550px;
+            filter: drop-shadow(0 20px 40px rgba(120, 119, 198, 0.3));
+        }
+
+        .message__item.active {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotateX(0deg);
+        }
+
+        .message__item.removing {
+            opacity: 0;
+            transform: translateY(-150px) scale(0.8) rotateX(-15deg);
+            filter: blur(5px);
+        }
+
+        /* Position multiple messages */
+        .message__item:nth-child(1) { top: 0; }
+        .message__item:nth-child(2) { top: 180px; }
+        .message__item:nth-child(3) { top: 360px; }
+
+        /* Futuristic Oval Icon */
+        .oval-container-medium {
+            position: relative;
+            width: 70px;
+            height: 80px;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.95), 
+                rgba(248, 250, 252, 0.9));
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 20px 40px rgba(120, 119, 198, 0.15),
+                0 0 30px rgba(120, 119, 198, 0.1),
+                inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(129, 239, 101, 0.829);
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: iconMorph 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
+        }
+
+        .oval-container-medium::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                transparent 70%);
+            animation: shimmer 3s linear infinite;
+        }
+
+        .oval-container-medium:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(120, 119, 198, 0.2),
+                0 0 50px rgba(120, 119, 198, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.9);
+        }
+
+        .oval-image-medium {
+            width: 65px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 50%;
+            position: absolute;
+            top: -4px;
+            border: 2px solid rgba(120, 119, 198, 0.3);
+            box-shadow: 
+                0 0 20px rgba(120, 119, 198, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Holographic Message Text */
+        .message__texts {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(248, 250, 252, 0.9) 100%);
+            backdrop-filter: blur(25px);
+            border-radius: 20px;
+            padding: 20px 25px;
+            
+            border: 1px solid rgba(120, 119, 198, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .message__texts::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(120, 119, 198, 0.8) 25%, 
+                rgba(255, 119, 198, 0.8) 50%, 
+                rgba(120, 219, 255, 0.8) 75%, 
+                transparent 100%);
+            animation: borderSweep 3s ease-in-out infinite;
+        }
+
+        .message__texts::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(120, 119, 198, 0.02) 50%, 
+                transparent 70%);
+            animation: shimmer 4s linear infinite;
+            pointer-events: none;
+        }
+
+        .message__texts:hover {
+            transform: translateY(-3px);
+           
+        }
+
+        .message__texts p {
+            color: rgba(30, 41, 59, 0.9);
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            font-weight: 500;
+            width: 100%;
+            text-shadow: 0 0 10px rgba(120, 119, 198, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Enhanced Typing Animation */
+        .typing-text {
+            border-right: 3px solid rgba(120, 119, 198, 0.8);
+            animation: enhancedBlink 1.2s infinite;
+        }
+
+        /* Floating Elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(120, 119, 198, 0.6);
+            border-radius: 50%;
+            animation: floatAround 15s linear infinite;
+            box-shadow: 0 0 10px rgba(120, 119, 198, 0.8);
+        }
+
+        /* Scan Lines */
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                transparent 50%, 
+                rgba(120, 119, 198, 0.01) 50%, 
+                rgba(120, 119, 198, 0.01) 51%, 
+                transparent 51%);
+            background-size: 100% 4px;
+            animation: scanLineMove 0.1s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Animations */
+        @keyframes backgroundShift {
+            0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+            25% { filter: hue-rotate(90deg) brightness(1.2); }
+            50% { filter: hue-rotate(180deg) brightness(0.8); }
+            75% { filter: hue-rotate(270deg) brightness(1.1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
+        }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.1; }
+        }
+
+        @keyframes navGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes iconGlow {
+            0%, 100% { box-shadow: 0 8px 25px rgba(120, 119, 198, 0.4), 0 0 20px rgba(255, 119, 198, 0.3); }
+            50% { box-shadow: 0 8px 25px rgba(255, 119, 198, 0.6), 0 0 30px rgba(120, 219, 255, 0.5); }
+        }
+
+        @keyframes titleShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e; }
+            50% { transform: scale(1.2); box-shadow: 0 0 30px #22c55e, 0 0 60px #22c55e; }
+        }
+
+        @keyframes iconMorph {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; filter: blur(10px); }
+            50% { transform: scale(1.2) rotate(90deg); filter: blur(2px); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @keyframes borderSweep {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: -100%; }
+        }
+
+        @keyframes enhancedBlink {
+            0%, 50% { border-color: rgba(120, 119, 198, 0.8); box-shadow: 0 0 10px rgba(120, 119, 198, 0.5); }
+            51%, 100% { border-color: transparent; box-shadow: none; }
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 100vh) rotate(0deg); }
+            100% { transform: translate(100vw, -100px) rotate(360deg); }
+        }
+
+        @keyframes scanLineMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Hologram glitch effect */
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        .message__item:nth-child(odd) {
+            animation: glitch 0.3s ease-in-out 5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    
+    <!-- Grid Overlay -->
+    <div class="grid-overlay"></div>
+    
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <!-- Scan Lines -->
+    <div class="scan-lines"></div>
+    
+    <div class="main__container__messaging">
+        <!-- Ultra-Sleek Navigation -->
+        <div class="main__navigation">
+            <div class="nav__left">
+                <div class="message__icon">
+                    <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=100&fit=crop" alt="Logo">
+                    <h1 class="nav__title">NEXUS LIVE</h1>
+                </div>
+            </div>
+            <div class="nav__right">
+                <div class="nav__status">
+                    <div class="status__dot"></div>
+                    <span class="status__text">CONNECTED</span>
+                </div>
+                <div class="nav__counter">
+                    <span id="messageCounter">MESSAGES: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Holographic Message Center -->
+        <div class="flexed__centered">
+            <div class="messages__container" id="messagesContainer">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FuturisticMessageSystem {
+            constructor() {
+                this.messages = [
+                    " NEXUS AI CORE: Neural pathways synchronized successfully",
+                    "QUANTUM PROCESSOR: Blockchain verification complete - Transaction ID: #QX7742",
+                    " SECURITY PROTOCOL: Biometric authentication enabled - Access granted",
+                    "GLOBAL NETWORK: Satellite uplink established - Signal strength: 98.7%",
+                    " LAB MODULE: Nano-technology calibration in progress - ETA: 2 minutes",
+                    " CRYPTO VAULT: Digital assets secured with quantum encryption",
+                    " MISSION CONTROL: Autonomous systems operational - All parameters green",
+                    " STELLAR ENGINE: Fusion reactor stable - Energy output: 1.21 gigawatts",
+                    "BIO-SCANNER: DNA sequencing complete - Genetic profile updated",
+                    " PROPHET AI: Market prediction algorithms activated - Accuracy: 94.3%",
+                    " TEMPORAL SYNC: Time dilation compensated - Chronometer synchronized",
+                    " HOLO-DESIGNER: 3D rendering pipeline optimized - Photorealism: Ultra"
+                ];
+                
+                this.avatars = [
+                    "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face"
+                ];
+                
+                this.container = document.getElementById('messagesContainer');
+                this.counter = document.getElementById('messageCounter');
+                this.activeMessages = [];
+                this.messageCount = 0;
+                this.maxMessages = 3;
+                
+                this.initializeEffects();
+                this.startSystem();
+            }
+            
+            initializeEffects() {
+                this.createParticles();
+                this.createFloatingElements();
+            }
+            
+            createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 20 + 's';
+                    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            createFloatingElements() {
+                const floatingContainer = document.getElementById('floatingElements');
+                for (let i = 0; i < 20; i++) {
+                    const element = document.createElement('div');
+                    element.className = 'floating-element';
+                    element.style.left = Math.random() * 100 + '%';
+                    element.style.top = Math.random() * 100 + '%';
+                    element.style.animationDelay = Math.random() * 15 + 's';
+                    element.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    floatingContainer.appendChild(element);
+                }
+            }
+            
+            startSystem() {
+                // Start with first message immediately
+                this.addMessage();
+                
+                // Then add new messages every 4 seconds for more dynamic feel
+                setInterval(() => {
+                    this.addMessage();
+                }, 4000);
+            }
+            
+            addMessage() {
+                // Remove oldest message if we have max messages
+                if (this.activeMessages.length >= this.maxMessages) {
+                    this.removeOldestMessage();
+                }
+                
+                // Create new message
+                const messageData = {
+                    id: Date.now(),
+                    text: this.getRandomMessage(),
+                    avatar: this.getRandomAvatar()
+                };
+                
+                const messageElement = this.createMessageElement(messageData);
+                this.container.appendChild(messageElement);
+                this.activeMessages.push(messageElement);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    messageElement.classList.add('active');
+                }, 150);
+                
+                // Start typing animation after icon appears
+                setTimeout(() => {
+                    this.typeMessage(messageElement.querySelector('p'), messageData.text);
+                }, 1000);
+                
+                this.messageCount++;
+                this.updateCounter();
+            }
+            
+            removeOldestMessage() {
+                if (this.activeMessages.length > 0) {
+                    const oldestMessage = this.activeMessages.shift();
+                    oldestMessage.classList.add('removing');
+                    
+                    setTimeout(() => {
+                        if (oldestMessage.parentNode) {
+                            oldestMessage.parentNode.removeChild(oldestMessage);
+                        }
+                    }, 800);
+                }
+            }
+            
+            createMessageElement(messageData) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message__item';
+                messageDiv.innerHTML = `
+                    <div class="oval-container-medium">
+                        <img class="oval-image-medium" src="${messageData.avatar}" alt="Avatar">
+                    </div>
+                    <div class="message__texts">
+                        <p></p>
+                    </div>
+                `;
+                return messageDiv;
+            }
+            
+            typeMessage(element, text) {
+                element.classList.add('typing-text');
+                let i = 0;
+                
+                const typeInterval = setInterval(() => {
+                    element.textContent = text.slice(0, i + 1);
+                    i++;
+                    
+                    if (i === text.length) {
+                        clearInterval(typeInterval);
+                        element.classList.remove('typing-text');
+                    }
+                }, 30); // Faster typing for more dynamic feel
+            }
+            
+            getRandomMessage() {
+                return this.messages[Math.floor(Math.random() * this.messages.length)];
+            }
+            
+            getRandomAvatar() {
+                return this.avatars[Math.floor(Math.random() * this.avatars.length)];
+            }
+            
+            updateCounter() {
+                this.counter.textContent = `MESSAGES: ${this.messageCount.toString().padStart(3, '0')}`;
+            }
+        }
+        
+        // Initialize the futuristic system when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            new FuturisticMessageSystem();
+        });
+    </script>
+</body>
+</html>
